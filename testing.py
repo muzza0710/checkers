@@ -1,6 +1,5 @@
-import pygame as py
-from os import path
+x = [1,2,3,4,5]
+r = x.reverse()
 
-
-py.init()
-surf = py.image.load('assets\checker_black.webp')
+print(x)
+print(r)

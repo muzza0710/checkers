@@ -1,11 +1,11 @@
 import pygame as py
 
 class Piece(py.sprite.Sprite):
-    def __init__(self, groups, size, pos) -> None:
+    def __init__(self, groups, size, pos, img) -> None:
         super().__init__(groups)
         self.pos, self.size, self.groups = pos, size, groups
 
-        self.image = py.image.load('assets\checker_black.webp').convert_alpha()
+        self.image = img
         self.resized_img = py.transform.scale(self.image, (size, size))
 
         self.surf = py.Surface((size, size))

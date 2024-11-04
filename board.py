@@ -5,7 +5,7 @@ red = (200,0,0)
 class Board:
     def __init__(self, rows= 8, cols = 8, cell_size = 50) -> None:
         self.rows, self.cols, self.cell_size = rows, cols, cell_size
-        self.grid = [Cell(self.cell_size, (i // rows * self.cell_size, i % cols * self.cell_size), red if ((i// rows) + (i % cols)) % 2 == 0 else 'black') for i in range(rows * cols)]
+        self.grid = [Cell(self.cell_size, (i % rows * self.cell_size, i // cols * self.cell_size), red if ((i// cols) + (i % rows)) % 2 == 0 else 'black') for i in range(rows * cols)]
         self.font = py.font.SysFont('arial', 16)
         
 
