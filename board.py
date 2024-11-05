@@ -5,7 +5,7 @@ red = (200,0,0)
 class Board:
     def __init__(self, groups, rows= 8, cols = 8, cell_size = 50,) -> None:
         self.groups, self.rows, self.cols, self.cell_size = groups, rows, cols, cell_size
-        self.grid = [Cell(self.cell_size, (i % rows * self.cell_size, i // cols * self.cell_size), red if ((i// cols) + (i % rows)) % 2 == 0 else 'black', self.groups) for i in range(rows * cols)]
+        self.grid = [Cell(self.cell_size, (i % rows * self.cell_size, i // cols * self.cell_size), red if ((i// cols) + (i % rows)) % 2 == 0 else 'black', self.groups, i) for i in range(rows * cols)]
         self.font = py.font.SysFont('arial', 16)
         
 
@@ -18,9 +18,10 @@ class Board:
 
 
 class Cell(py.sprite.Sprite):
-    def __init__(self, size, pos, color, groups) -> None:
+    def __init__(self, size, pos, color, groups, index) -> None:
         super().__init__(groups)
         self.size, self.pos, self.color = size, pos, color
+        self.index = index
         self.open = True if self.color == 'black' else False
 
         self.surf = py.Surface((size, size))
