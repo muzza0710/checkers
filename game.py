@@ -41,15 +41,16 @@ class Checkers:
                 
                 # After dragging a piece
                 if event.type == py.MOUSEBUTTONUP and event.button == 1: 
-                    if temp_cell and temp_cell.open:
+                    if temp_cell and temp_cell.open and temp_cell in self.moving_piece.moves:
                         self.moving_piece.pos = temp_cell.rect.topleft
                         self.moving_piece.cell.open = True
                         self.moving_piece.cell = temp_cell
                         temp_cell.open = False
 
-                    self.moving_piece.drag_pos = None
-                    self.moving_piece = None 
-                    temp_cell = None
+                    if self.moving_piece:
+                        self.moving_piece.drag_pos = None
+                        self.moving_piece = None 
+                        temp_cell = None
                     
 
             # update
@@ -74,7 +75,7 @@ class Checkers:
 
             # higlight hovered cells that are open
             for sprite in self.board_sprites:
-                if sprite.rect.collidepoint(py.mouse.get_pos()): # and sprite.open:
+                if sprite.rect.collidepoint(py.mouse.get_pos()) and not self.moving_piece: # and sprite.open:
                     sprite.highlight(self.surf)
                     # print(sprite.open, sprite.index, self.board.grid[sprite.index].open)
 
@@ -83,9 +84,11 @@ class Checkers:
 
             for sprite in self.player_sprites:
                 sprite.draw(self.surf)
-                if sprite.rect.collidepoint(py.mouse.get_pos()):
+                if sprite.rect.collidepoint(py.mouse.get_pos()) and not self.moving_piece:
                     sprite.highlight(self.surf)
-            if self.moving_piece: self.moving_piece.draw(self.surf)
+            if self.moving_piece: 
+                self.moving_piece.highlight(self.surf)
+                self.moving_piece.draw(self.surf)
                 
             
             # for i, piece in enumerate(self.player1_pieces):
