@@ -14,8 +14,10 @@ class Checkers:
         self.p2_img = py.image.load('assets\checker_red.webp').convert_alpha()
 
     def setup(self):
-        self.board = Board(cell_size=self.cell_size)
-        self.sprites = py.sprite.Group()
+        self.player_sprites = py.sprite.Group()
+        self.board_sprites = py.sprite.Group()
+
+        self.board = Board(self.board_sprites, cell_size=self.cell_size)
         self.player1_pieces = self.create_pieces(self.board.grid, self.p1_img)
         self.player2_pieces = self.create_pieces(self.board.grid, self.p2_img, reverse=True)
 
@@ -27,7 +29,8 @@ class Checkers:
                     if len(pieces) == 12:
                         break
                     else:
-                        pieces.append(Piece(self.sprites, self.cell_size, cell.pos, img))
+                        pieces.append(Piece(self.player_sprites, self.cell_size, cell.pos, img))
+                        cell.open = False
         return pieces
 
     def run(self):
@@ -46,8 +49,14 @@ class Checkers:
             self.surf.fill((111,111,111))
             # draw
             self.board.draw(self.surf)
-            for sprite in self.sprites:
+            for sprite in self.board_sprites:
+                if sprite.rect.collidepoint(py.mouse.get_pos()) and sprite.open:
+                    sprite.highlight(self.surf)
+
+            for sprite in self.player_sprites:
                 sprite.draw(self.surf)
+                if sprite.rect.collidepoint(py.mouse.get_pos()):
+                    sprite.highlight(self.surf)
             
             # for i, piece in enumerate(self.player1_pieces):
             #     text = self.font.render(str(i), 1, 'grey')
@@ -58,6 +67,7 @@ class Checkers:
             #     text = self.font.render(str(i), 1, 'grey')
             #     rect = text.get_frect(center = piece.rect.center)
             #     self.surf.blit(text, rect)
+
 
 
             self.win.flip()

@@ -13,3 +13,6 @@ class Piece(py.sprite.Sprite):
 
     def draw(self, surface):
         surface.blit(self.resized_img, self.rect)
+
+    def highlight(self, surface):
+        py.draw.rect(surface, (0,200,0), self.rect, 2, self.size // 2 )

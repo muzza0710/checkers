@@ -3,9 +3,9 @@ import pygame as py
 red = (200,0,0)
 
 class Board:
-    def __init__(self, rows= 8, cols = 8, cell_size = 50) -> None:
-        self.rows, self.cols, self.cell_size = rows, cols, cell_size
-        self.grid = [Cell(self.cell_size, (i % rows * self.cell_size, i // cols * self.cell_size), red if ((i// cols) + (i % rows)) % 2 == 0 else 'black') for i in range(rows * cols)]
+    def __init__(self, groups, rows= 8, cols = 8, cell_size = 50,) -> None:
+        self.groups, self.rows, self.cols, self.cell_size = groups, rows, cols, cell_size
+        self.grid = [Cell(self.cell_size, (i % rows * self.cell_size, i // cols * self.cell_size), red if ((i// cols) + (i % rows)) % 2 == 0 else 'black', self.groups) for i in range(rows * cols)]
         self.font = py.font.SysFont('arial', 16)
         
 
@@ -17,8 +17,9 @@ class Board:
                 #     surf.blit(text, cell.rect)
 
 
-class Cell:
-    def __init__(self, size, pos, color) -> None:
+class Cell(py.sprite.Sprite):
+    def __init__(self, size, pos, color, groups) -> None:
+        super().__init__(groups)
         self.size, self.pos, self.color = size, pos, color
         self.open = True if self.color == 'black' else False
 
@@ -27,8 +28,8 @@ class Cell:
         self.rect = self.surf.get_frect(topleft= self.pos)
 
     def draw(self, surface):
-        surface.blit(self.surf, self.rect)        
+        surface.blit(self.surf, self.rect)   
 
-    def higlight(self, surface):
+    def highlight(self, surface):
         py.draw.rect(surface, (0,200,0), self.rect, 2)
         
