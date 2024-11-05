@@ -12,7 +12,7 @@ class Board:
     def draw(self, surf):
         for cell in self.grid:
                 surf.blit(cell.surf, cell.rect)
-                # if cell.open:
+                # if not cell.occupied:
                 #     text = self.font.render(str(cell.pos), True, 'grey')
                 #     surf.blit(text, cell.rect)
 
@@ -22,7 +22,7 @@ class Cell(py.sprite.Sprite):
         super().__init__(groups)
         self.size, self.pos, self.color = size, pos, color
         self.index = index
-        self.open = True if self.color == 'black' else False
+        self.occupied = False if self.color == 'black' else True
 
         self.surf = py.Surface((size, size))
         self.surf.fill(color)
@@ -31,6 +31,6 @@ class Cell(py.sprite.Sprite):
     def draw(self, surface):
         surface.blit(self.surf, self.rect)   
 
-    def highlight(self, surface):
-        py.draw.rect(surface, (0,200,0), self.rect, 2)
+    def highlight(self, surface, color =(0,200,0)):
+        py.draw.rect(surface, color, self.rect, 2)
         

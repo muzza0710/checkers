@@ -41,11 +41,11 @@ class Checkers:
                 
                 # After dragging a piece
                 if event.type == py.MOUSEBUTTONUP and event.button == 1: 
-                    if temp_cell and temp_cell.open and temp_cell in self.moving_piece.moves:
+                    if temp_cell and not temp_cell.occupied and temp_cell in self.moving_piece.moves:
                         self.moving_piece.pos = temp_cell.rect.topleft
-                        self.moving_piece.cell.open = True
+                        self.moving_piece.cell.occupied = False
                         self.moving_piece.cell = temp_cell
-                        temp_cell.open = False
+                        temp_cell.occupied = self.moving_piece.player
 
                     if self.moving_piece:
                         self.moving_piece.drag_pos = None
@@ -69,15 +69,16 @@ class Checkers:
 
             # update player pieces
             self.player_sprites.update(self.board)
+            self.board_sprites.update()
     
             # draw
             self.board.draw(self.surf)
 
             # higlight hovered cells that are open
             for sprite in self.board_sprites:
-                if sprite.rect.collidepoint(py.mouse.get_pos()) and not self.moving_piece: # and sprite.open:
+                if sprite.rect.collidepoint(py.mouse.get_pos()) and not self.moving_piece and not sprite.occupied:
                     sprite.highlight(self.surf)
-                    # print(sprite.open, sprite.index, self.board.grid[sprite.index].open)
+                    # print(sprite.occupied, sprite.index, self.board.grid[sprite.index].occupied)
 
             if temp_cell:
                 temp_cell.highlight(self.surf)
@@ -92,7 +93,7 @@ class Checkers:
                 
             
             # for i, piece in enumerate(self.player1_pieces):
-            #     text = self.font.render(str(piece.cell.open), 1, 'black')
+            #     text = self.font.render(str(piece.cell.occupied), 1, 'black')
             #     rect = text.get_frect(center = piece.rect.center)
             #     self.surf.blit(text, rect)
 
@@ -101,11 +102,11 @@ class Checkers:
             #     rect = text.get_frect(center = piece.rect.center)
             #     self.surf.blit(text, rect)
 
-            for i, cell in enumerate(self.board_sprites):
-                if cell.open:
-                    text = self.font.render(str(cell.open), 1, 'white')
-                    rect = text.get_frect(center = cell.rect.center)
-                    self.surf.blit(text, rect)
+            # for i, cell in enumerate(self.board_sprites):
+            #     # if not cell.occupied:
+            #     text = self.font.render(str(cell.occupied), 1, 'white')
+            #     rect = text.get_frect(center = cell.rect.center)
+            #     self.surf.blit(text, rect)
 
 
 
@@ -122,18 +123,18 @@ class Checkers:
         board = grid[:]
         if reverse == True: board = reversed(grid[:])
         for cell in board:
-                if (cell.open):
+                if not cell.occupied:
                     if len(pieces) == num_pieces:
                         break
                     else:
                         pieces.append(Piece(self.player_sprites, self.cell_size, cell.pos, img, cell, self.board, player))
-                        cell.open = False
+                        cell.occupied = player
         return pieces
 
     def check_mouse_collision(self, group):
         for obj in group:
             if obj.rect.collidepoint(py.mouse.get_pos()):
-                if obj.open:
+                if not obj.occupied:
                     return obj
         return False
         
