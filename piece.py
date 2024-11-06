@@ -15,6 +15,7 @@ class Piece(py.sprite.Sprite):
 
         # def moves
         self.moves = []
+        self.take_pieces = []
         if self.player == 1:
             self.moves = self.get_moves('down', self.cell.index)
         elif self.player == 2:
@@ -25,13 +26,18 @@ class Piece(py.sprite.Sprite):
 
     def highlight(self, surface, color= (0,200,0)):
         py.draw.rect(surface, color, self.rect, 2, self.size // 2 )
-        # print(f'index = {self.cell.index}, i = {self.i}')
-        if self.moves:
-            for cell in self.moves:
-                cell.highlight(surface, (0,0,200))
+        if len(self.moves) > 0:
+            for d in self.moves:
+                if d['move']:
+                    d['move'].highlight(surface, (0,0,200))
         if self.take_moves:
-            for cell in self.take_moves:
-                cell.highlight(surface, color)
+            for t in self.take_moves:
+                if t['move']:
+                    t['move'].highlight(surface, color)
+                    py.draw.rect(surface, (200,0,0), t['piece'].rect, 2, self.size // 2 )
+        # if self.take_pieces:
+        #     for piece in self.take_pieces:
+        #            py.draw.rect(surface, (200,0,0), piece.rect, 2, self.size // 2 )
 
     def get_moves(self, direction, index):
         if direction == 'down':
@@ -40,6 +46,7 @@ class Piece(py.sprite.Sprite):
             dir = -8
         i = index + dir
         self.take_moves = []
+        self.take_pieces = []
 
         # left move
         if 0 < i < len(self.board.grid) -1:
@@ -47,30 +54,38 @@ class Piece(py.sprite.Sprite):
                 if self.board.grid[i-1].occupied != self.player and self.board.grid[i-1].occupied:
                     try:   
                         j = self.board.grid[i-1].index
-                        if 0 < j < len(self.board.grid) -1 and j % self.board.cols > 0:     
-                            moves = self.board.grid[j-1 + dir] if not self.board.grid[j-1 + dir].occupied else None
-                            if moves:
-                                self.take_moves.append(moves)
                     except Exception as e: 
                         print(e, '1')
-                elif not self.board.grid[i-1].occupied:
-                    self.moves.append(self.board.grid[i-1])
+                    if 0 < j + dir < len(self.board.grid) -1 and j % self.board.cols > 0:     
+                        move = {'move': self.board.grid[j-1 + dir] if not self.board.grid[j-1 + dir].occupied else None, 'piece': None}
+                        if move['move']:
+                            self.take_moves.append(move)
+                            if self.board.grid[j].piece:
+                                move['piece'] = self.board.grid[j].piece
+                    
+                if not self.board.grid[i-1].occupied:
+                    move = {'move': self.board.grid[i-1]}
+                    self.moves.append(move)
                 
             # right move
             if i % self.board.cols < self.board.cols - 1:
                 if self.board.grid[i+1].occupied != self.player and self.board.grid[i+1].occupied:
                     try:
                         j = self.board.grid[i+1].index
-                        if 0 < j < len(self.board.grid) -1 and j % self.board.cols < self.board.cols - 1:
-                            moves = self.board.grid[j+1+ dir] if not self.board.grid[j+1+dir].occupied else None
-                        if moves:
-                            self.take_moves.append(moves)
                     except Exception as e: 
                         print(e, '2')
-                elif not self.board.grid[i+1].occupied:
-                    self.moves.append(self.board.grid[i+1])
-
-        if self.take_moves:
+                    if 0 < j + dir < len(self.board.grid) -1 and j % self.board.cols < self.board.cols - 1:
+                        move = {'move' :self.board.grid[j+1+ dir] if not self.board.grid[j+1+dir].occupied else None}
+                        if move['move']:
+                            self.take_moves.append(move)
+                            if self.board.grid[j].piece:
+                                move['piece'] = self.board.grid[j].piece
+                                self.take_pieces.append(move)
+                    
+                if not self.board.grid[i+1].occupied:
+                    self.moves.append({'move': self.board.grid[i+1]})
+                    
+        if len(self.take_moves) > 0:
             self.moves = self.take_moves
                 
 

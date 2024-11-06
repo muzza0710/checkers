@@ -20,6 +20,7 @@ class Board:
 class Cell(py.sprite.Sprite):
     def __init__(self, size, pos, color, groups, index) -> None:
         super().__init__(groups)
+        self.piece = None
         self.size, self.pos, self.color = size, pos, color
         self.index = index
         self.occupied = False if self.color == 'black' else True
@@ -34,3 +35,7 @@ class Cell(py.sprite.Sprite):
     def highlight(self, surface, color =(0,200,0)):
         py.draw.rect(surface, color, self.rect, 2)
         
+    def remove_piece(self):
+         self.piece.kill()
+         self.piece = None
+         self.occupied = False

@@ -1,5 +1,3 @@
-x = [1,2,3,4,5]
-r = x.reverse()
+test = [{'a': 1, 'b':2}]
 
-print(x)
-print(r)
+if 1 in dict in test: print('true')
