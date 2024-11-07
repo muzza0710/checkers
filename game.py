@@ -35,6 +35,9 @@ class Checkers:
     def run(self):
         self.running = True
         temp_cell = None
+        player_turn = self.player1_pieces
+
+
 
         while self.running:
             # event loop
@@ -56,7 +59,9 @@ class Checkers:
                                 temp_cell.piece = self.moving_piece
                                 temp_cell.occupied = self.moving_piece.player
                                 self.moving_piece.cell = temp_cell
-
+                                player_turn = self.player2_pieces if player_turn == self.player1_pieces else self.player1_pieces
+                    
+                    # clear moving piece and temp cell
                     if self.moving_piece:
                         self.moving_piece.drag_pos = None
                         self.moving_piece = None 
@@ -69,7 +74,7 @@ class Checkers:
             # select moving piece if clicked on
             for sprite in self.player_sprites:
                 if sprite.rect.collidepoint(py.mouse.get_pos()):
-                    if py.mouse.get_pressed()[0] and not self.moving_piece:
+                    if py.mouse.get_pressed()[0] and not self.moving_piece and sprite in player_turn:
                         self.moving_piece = sprite
 
             # if a piece is being moved set its position and potential new cell
@@ -89,14 +94,17 @@ class Checkers:
                 if sprite.rect.collidepoint(py.mouse.get_pos()) and not self.moving_piece and not sprite.occupied:
                     sprite.highlight(self.surf)
 
+            # highlight cell moving piece will occupy
             if temp_cell:
                 temp_cell.highlight(self.surf)
 
+            # higlight moves for hovered pieces for the play whose turn it is
             for sprite in self.player_sprites:
                 sprite.draw(self.surf)
-                if sprite.rect.collidepoint(py.mouse.get_pos()) and not self.moving_piece:
+                if sprite.rect.collidepoint(py.mouse.get_pos()) and not self.moving_piece and sprite in player_turn:
                     sprite.highlight(self.surf)
 
+            # highlight and draw moving piece last so its always on top
             if self.moving_piece: 
                 self.moving_piece.highlight(self.surf)
                 self.moving_piece.draw(self.surf)
@@ -117,15 +125,13 @@ class Checkers:
             #         rect = text.get_frect(center = cell.rect.center)
             #         self.surf.blit(text, rect)
 
-
-
             self.win.flip()
 
 
 
         py.quit()
         raise SystemExit
-    
+
 
     def create_pieces(self, grid, img, player, reverse= False, num_pieces= 12):
         pieces = []

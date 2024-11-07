@@ -1,6 +1,8 @@
 import pygame as py
 
 red = (200,0,0)
+green = (0,200,0)
+blue = (0,0,200)
 
 class Board:
     def __init__(self, groups, rows= 8, cols = 8, cell_size = 50,) -> None:
@@ -8,7 +10,6 @@ class Board:
         self.grid = [Cell(self.cell_size, (i % rows * self.cell_size, i // cols * self.cell_size), red if ((i// cols) + (i % rows)) % 2 == 0 else 'black', self.groups, i) for i in range(rows * cols)]
         self.font = py.font.SysFont('arial', 16)
         
-
     def draw(self, surf):
         for cell in self.grid:
                 surf.blit(cell.surf, cell.rect)
@@ -32,7 +33,7 @@ class Cell(py.sprite.Sprite):
     def draw(self, surface):
         surface.blit(self.surf, self.rect)   
 
-    def highlight(self, surface, color =(0,200,0)):
+    def highlight(self, surface, color =green):
         py.draw.rect(surface, color, self.rect, 2)
         
     def remove_piece(self):

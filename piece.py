@@ -88,7 +88,6 @@ class Piece(py.sprite.Sprite):
         if len(self.take_moves) > 0:
             self.moves = self.take_moves
                 
-
     def update(self, board):
         # update board 
         self.board = board
