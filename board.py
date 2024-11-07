@@ -17,7 +17,6 @@ class Board:
                 #     text = self.font.render(str(cell.pos), True, 'grey')
                 #     surf.blit(text, cell.rect)
 
-
 class Cell(py.sprite.Sprite):
     def __init__(self, size, pos, color, groups, index) -> None:
         super().__init__(groups)

@@ -1,117 +1,127 @@
-# copilots attempt
-
-import pygame
+import pygame as py
+from board import Board
+from piece import Piece
+from info_panel import InfoPanel
 import sys
 
-# Initialize Pygame
-pygame.init()
-
-# Constants
-WIDTH, HEIGHT = 800, 800
+PIECES = 8
+CELL_SIZE = 75
 ROWS, COLS = 8, 8
-SQUARE_SIZE = WIDTH // COLS
 
-# Colors
-RED = (255, 0, 0)
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-BLUE = (0, 0, 255)
-GREY = (128, 128, 128)
+class Checkers:
+    def __init__(self) -> None:
+        py.init()
+        self.font = py.Font(None, 20)
+        info_panel_size = [(COLS * CELL_SIZE) * 0.4, ROWS * CELL_SIZE]
+        self.win = py.Window('Checkers', (COLS * CELL_SIZE + info_panel_size[0], ROWS * CELL_SIZE))
+        self.surf = self.win.get_surface()
 
-# Create the display window
-WIN = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption('Checkers')
+        self.p1_img = self.load_image('assets/checker_white_blank.png')
+        self.p1_king_img = self.load_image('assets/checker_white.webp')
+        self.p2_img = self.load_image('assets/checker_red_blank.png')
+        self.p2_king_img = self.load_image('assets/checker_red.webp')
 
-# Load images
-CROWN = pygame.transform.scale(pygame.image.load('assets/checker_black.webp'), (44, 25))
+        self.info_panel = InfoPanel(info_panel_size, (COLS * CELL_SIZE, 0))
 
-class Piece:
-    PADDING = 15
-    OUTLINE = 2
+    def load_image(self, path):
+        try:
+            return py.image.load(path).convert_alpha()
+        except py.error as e:
+            print(f"Could not load image {path}: {e}")
+            sys.exit(1)
 
-    def __init__(self, row, col, color):
-        self.row = row
-        self.col = col
-        self.color = color
-        self.king = False
+    def setup(self):
+        self.player_sprites = py.sprite.Group()
+        self.board_sprites = py.sprite.Group()
+        self.board = Board(self.board_sprites, cell_size=CELL_SIZE)
+        self.player1_pieces = self.create_pieces(self.board.grid, self.p1_img, 1, num_pieces=PIECES)
+        self.player2_pieces = self.create_pieces(self.board.grid, self.p2_img, 2, reverse=True, num_pieces=PIECES)
+        self.moving_piece = None 
 
-    def draw(self, win):
-        radius = SQUARE_SIZE // 2 - self.PADDING
-        pygame.draw.circle(win, GREY, (self.x, self.y), radius + self.OUTLINE)
-        pygame.draw.circle(win, self.color, (self.x, self.y), radius)
-        if self.king:
-            win.blit(CROWN, (self.x - CROWN.get_width()//2, self.y - CROWN.get_height()//2))
+    def run(self):
+        self.running = True
+        temp_cell = None
+        player_turn = self.player1_pieces
 
-    def move(self, row, col):
-        self.row = row
-        self.col = col
+        while self.running:
+            self.handle_events(player_turn, temp_cell)
+            self.update_screen(player_turn, temp_cell)
+        py.quit()
+        raise SystemExit
 
-    @property
-    def x(self):
-        return self.col * SQUARE_SIZE + SQUARE_SIZE // 2
+    def handle_events(self, player_turn, temp_cell):
+        for event in py.event.get():
+            if event.type == py.QUIT or event.type == py.KEYDOWN and event.key == py.K_ESCAPE:
+                self.running = False
+            if event.type == py.MOUSEBUTTONUP and event.button == 1:
+                self.handle_mouse_up(player_turn, temp_cell)
 
-    @property
-    def y(self):
-        return self.row * SQUARE_SIZE + SQUARE_SIZE // 2
+    def handle_mouse_up(self, player_turn, temp_cell):
+        if temp_cell and not temp_cell.occupied:
+            for d in self.moving_piece.moves:
+                if d['move'] == temp_cell:
+                    if 'piece' in d:
+                        d['piece'].cell.remove_piece()
+                    self.moving_piece.pos = temp_cell.rect.topleft
+                    self.moving_piece.cell.occupied = False
+                    self.moving_piece.cell.piece = None
+                    temp_cell.piece = self.moving_piece
+                    temp_cell.occupied = self.moving_piece.player
+                    self.moving_piece.cell = temp_cell
+                    player_turn = self.player2_pieces if player_turn == self.player1_pieces else self.player1_pieces
+        if self.moving_piece:
+            self.moving_piece.drag_pos = None
+            self.moving_piece = None 
+            temp_cell = None
 
-def create_board():
-    board = []
-    for row in range(ROWS):
-        board.append([None] * COLS)
-    for row in range(3):
-        for col in range(row % 2, COLS, 2):
-            board[row][col] = Piece(row, col, RED)
-    for row in range(5, 8):
-        for col in range(row % 2, COLS, 2):
-            board[row][col] = Piece(row, col, BLUE)
-    return board
+    def update_screen(self, player_turn, temp_cell):
+        self.surf.fill((111, 111, 111))
+        for sprite in self.player_sprites:
+            if sprite.rect.collidepoint(py.mouse.get_pos()):
+                if py.mouse.get_pressed()[0] and not self.moving_piece and sprite in player_turn:
+                    self.moving_piece = sprite
+        if self.moving_piece:
+            self.moving_piece.drag_pos = py.mouse.get_pos()
+            temp_cell = self.check_mouse_collision(self.board_sprites)
 
-def draw_board(win, board):
-    win.fill(BLACK)
-    for row in range(ROWS):
-        for col in range(row % 2, COLS, 2):
-            pygame.draw.rect(win, WHITE, (row*SQUARE_SIZE, col*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
-    for row in range(ROWS):
-        for col in range(COLS):
-            piece = board[row][col]
-            if piece is not None:
-                piece.draw(win)
+        info_text = 'White Move' if player_turn == self.player1_pieces else 'Red Move'
 
-def get_piece_at(mouse_pos, board):
-    x, y = mouse_pos
-    row = y // SQUARE_SIZE
-    col = x // SQUARE_SIZE
-    return board[row][col]
+        self.player_sprites.update(self.board)
+        self.board_sprites.update()
+        self.board.draw(self.surf)
+        for sprite in self.board_sprites:
+            if sprite.rect.collidepoint(py.mouse.get_pos()) and not self.moving_piece and not sprite.occupied:
+                sprite.highlight(self.surf)
+        if temp_cell:
+            temp_cell.highlight(self.surf)
+        for sprite in self.player_sprites:
+            sprite.draw(self.surf)
+            if sprite.rect.collidepoint(py.mouse.get_pos()) and not self.moving_piece and sprite in player_turn:
+                sprite.highlight(self.surf)
+        if self.moving_piece:
+            self.moving_piece.highlight(self.surf)
+            self.moving_piece.draw(self.surf)
+        self.info_panel.draw(self.surf)
+        self.info_panel.print(self.surf, info_text)
+        self.win.flip()
 
-def main():
-    board = create_board()
-    run = True
-    clock = pygame.time.Clock()
-    selected_piece = None
+    def create_pieces(self, grid, img, player, reverse=False, num_pieces=12):
+        pieces = []
+        board = grid[::-1] if reverse else grid
+        for cell in board:
+            if not cell.occupied:
+                if len(pieces) == num_pieces:
+                    break
+                piece = Piece(self.player_sprites, CELL_SIZE, cell.pos, img, cell, self.board, player)
+                pieces.append(piece)
+                cell.occupied = player
+                cell.piece = piece
+        return pieces
 
-    while run:
-        clock.tick(60)
-        
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
+    def check_mouse_collision(self, group):
+        for obj in group:
+            if obj.rect.collidepoint(py.mouse.get_pos()):
+                if not obj.occupied:
+                    return obj
+        return False
 
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                pos = pygame.mouse.get_pos()
-                selected_piece = get_piece_at(pos, board)
-
-            if event.type == pygame.MOUSEBUTTONUP and selected_piece is not None:
-                pos = pygame.mouse.get_pos()
-                new_row = pos[1] // SQUARE_SIZE
-                new_col = pos[0] // SQUARE_SIZE
-                selected_piece.move(new_row, new_col)
-                selected_piece = None
-
-        draw_board(WIN, board)
-        pygame.display.update()
-    
-    pygame.quit()
-    sys.exit()
-
-if __name__ == "__main__":
-    main()
