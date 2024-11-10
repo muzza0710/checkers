@@ -36,6 +36,9 @@ class Cell(py.sprite.Sprite):
         py.draw.rect(surface, color, self.rect, 2)
         
     def remove_piece(self):
+         piece = self.piece
          self.piece.kill()
          self.piece = None
          self.occupied = False
+
+         return piece
